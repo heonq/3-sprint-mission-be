@@ -1,16 +1,16 @@
-import { Request, Response } from 'express';
 import UserRepository from '../../repositories/userRepository';
 import User from '../../models/user';
 import { AUTH_MESSAGES } from '../../constants/authMessages';
+import { UnauthorizedException } from '../../core/errors/unauthorizedException';
+import { NotFoundException } from '../../core/errors';
 
-const userRepository = new UserRepository();
+export class UserService {
+  constructor(private userRepository: UserRepository) {}
 
-export const getMe = async (req: Request, res: Response) => {
-  const userId = req.user?.userId!;
-  const userEntity = await userRepository.findById(userId);
+  async getMe(userId: number) {
+    const userEntity = await this.userRepository.findById(userId);
+    if (!userEntity) throw new NotFoundException(AUTH_MESSAGES.emailNotExist);
 
-  if (!userEntity) return res.status(401).json({ message: AUTH_MESSAGES.needLogin });
-
-  const user = new User(userEntity);
-  return res.status(201).json(user);
-};
+    return new User(userEntity);
+  }
+}

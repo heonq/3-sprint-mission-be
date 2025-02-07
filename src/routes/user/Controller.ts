@@ -1,10 +1,15 @@
-import { Router } from 'express';
-import { createAuthMiddleware } from '../../middleware/auth';
-import asyncRequestHandler from '../../utils/asyncRequestHandler';
-import { getMe } from './Service';
+import { Request, Response } from 'express';
+import { UserService } from './service';
 
-const router = Router();
+export class UserController {
+  constructor(private userService: UserService) {}
 
-router.get('/me', createAuthMiddleware(''), asyncRequestHandler(getMe));
+  getMe = async (req: Request, res: Response) => {
+    const userId = req.user?.userId!;
+    if (!userId) return res.status(200).json(null);
 
-export default router;
+    const user = await this.userService.getMe(userId);
+
+    return res.status(200).json(user?.toJSON());
+  };
+}
